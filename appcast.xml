@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
     <title>ERP System Updates</title>
-    <link>https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/appcast.xml</link>
+    <link>https://raw.githubusercontent.com/Mjadaa/erp/main/appcast.xml</link>
     <description>ERP System changelog</description>
     <language>ar</language>
 
     <item>
-      <title>Version 1.0.0</title>
-      <sparkle:version>1.0.0</sparkle:version>
-      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <title>Version 1.1.1</title>
+      <sparkle:version>1.1.1</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
       <pubDate>Mon, 02 Jun 2026 00:00:00 +0000</pubDate>
       <enclosure
-        url="https://github.com/YOUR_USERNAME/YOUR_REPO/releases/download/v1.0.0/erp_system_windows_v1.0.0.zip"
-        sparkle:version="1.0.0"
+        url="https://github.com/Mjadaa/erp/releases/download/V1.1.1/Release.2.zip"
+        sparkle:version="1.1.1"
         type="application/octet-stream"
-        length="0"
+        length="18559795"
       />
     </item>
 
