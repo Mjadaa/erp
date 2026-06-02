@@ -7,13 +7,13 @@
     <language>ar</language>
 
     <item>
-      <title>Version 1.1.1</title>
-      <sparkle:version>1.1.1</sparkle:version>
-      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <title>Version 1.2.1</title>
+      <sparkle:version>1.2.1</sparkle:version>
+      <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
       <pubDate>Mon, 02 Jun 2026 00:00:00 +0000</pubDate>
       <enclosure
-        url="https://github.com/Mjadaa/erp/releases/download/V1.1.1/Release.2.zip"
-        sparkle:version="1.1.1"
+        url="https://github.com/Mjadaa/erp/releases/download/V1.2.1/Release.2.zip"
+        sparkle:version="1.2.1"
         type="application/octet-stream"
         length="0"
       />

@@ -223,5 +223,12 @@
     "password_updated": "تم تغيير كلمة المرور بنجاح",
     "error_username_taken": "اسم المستخدم مستخدم بالفعل",
     "error_username_short": "يجب أن يكون اسم المستخدم 3 أحرف على الأقل",
-    "print": "طباعة / PDF"
+    "print": "طباعة / PDF",
+
+    "low_stock_alert_title": "تنبيه: منتجات وصلت للحد الأدنى",
+    "low_stock_min": "الحد:",
+
+    "update_available_title": "يوجد تحديث جديد للتطبيق",
+    "update_available_subtitle": "الإصدار الجديد:",
+    "update_install_now": "تحديث الآن"
 }

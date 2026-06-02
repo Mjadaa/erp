@@ -223,5 +223,12 @@
     "password_updated": "Password changed successfully",
     "error_username_taken": "Username already taken",
     "error_username_short": "Username must be at least 3 characters",
-    "print": "Print / PDF"
+    "print": "Print / PDF",
+
+    "low_stock_alert_title": "Alert: Products reached minimum level",
+    "low_stock_min": "Min:",
+
+    "update_available_title": "A new update is available",
+    "update_available_subtitle": "New version:",
+    "update_install_now": "Update Now"
 }

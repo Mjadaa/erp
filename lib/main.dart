@@ -14,7 +14,7 @@ import 'features/sales/screens/sales_screen.dart';
 import 'features/purchases/screens/purchases_screen.dart';
 import 'features/accounting/screens/accounting_screen.dart';
 import 'features/hr/screens/hr_screen.dart';
-import 'core/services/update_service.dart';
+import 'core/providers/update_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +31,7 @@ void main() async {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ],
         child: const ERPApp(),
       ),
@@ -86,7 +87,9 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
-    checkForUpdates();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UpdateProvider>().checkForUpdates();
+    });
   }
 
   static const _navItems = [

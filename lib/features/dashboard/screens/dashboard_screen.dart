@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../../../core/repositories/sales_repository.dart';
 import '../../../core/repositories/crm_repository.dart';
 import '../../../core/repositories/inventory_repository.dart';
+import '../../../core/models/inventory_models.dart';
+import '../../../core/providers/update_provider.dart';
 import '../../../core/theme/app_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -27,6 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _customerCount = 0;
   int _lowStockCount = 0;
   List<Map<String, dynamic>> _weeklySales = [];
+  List<Product> _lowStockProducts = [];
   bool _loading = true;
 
   @override
@@ -41,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _crmRepo.getCustomerCount(),
       _invRepo.getLowStockCount(),
       _salesRepo.getWeeklySales(),
+      _invRepo.getLowStockProducts(),
     ]);
     if (mounted) {
       setState(() {
@@ -48,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _customerCount = results[1] as int;
         _lowStockCount = results[2] as int;
         _weeklySales = results[3] as List<Map<String, dynamic>>;
+        _lowStockProducts = results[4] as List<Product>;
         _loading = false;
       });
     }
@@ -63,11 +69,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final revenue = (_salesStats['revenue'] as double?) ?? 0;
     final count = (_salesStats['count'] as int?) ?? 0;
 
+    final updateProvider = context.watch<UpdateProvider>();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (updateProvider.updateAvailable)
+            _UpdateBanner(
+              version: updateProvider.latestVersion,
+              onInstall: updateProvider.installUpdate,
+            ),
+          if (updateProvider.updateAvailable) const SizedBox(height: 16),
           _DashboardHeader(onRefresh: _load, onNewSale: widget.onNewSale),
           const SizedBox(height: 24),
           Row(
@@ -136,6 +150,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          if (_lowStockProducts.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            _LowStockPanel(products: _lowStockProducts),
+          ],
         ],
       ),
     );
@@ -603,6 +621,220 @@ class _ChartCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Update Banner ────────────────────────────────────────────────────────────
+
+class _UpdateBanner extends StatelessWidget {
+  final String version;
+  final VoidCallback onInstall;
+  const _UpdateBanner({required this.version, required this.onInstall});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1D4ED8).withAlpha(60),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.system_update_alt_rounded,
+              color: Colors.white, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'update_available_title'.tr(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  '${'update_available_subtitle'.tr()} $version',
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(200),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1D4ED8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: onInstall,
+            child: Text('update_install_now'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Low Stock Panel ──────────────────────────────────────────────────────────
+
+class _LowStockPanel extends StatelessWidget {
+  final List<Product> products;
+  const _LowStockPanel({required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFE4B5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFF8ED),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    color: Color(0xFFD97706), size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  'low_stock_alert_title'.tr(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Color(0xFF92400E),
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD97706),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${products.length} ${'kpi_stock_unit'.tr()}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Product rows
+          ...products.map((p) => _LowStockRow(product: p)),
+        ],
+      ),
+    );
+  }
+}
+
+class _LowStockRow extends StatelessWidget {
+  final Product product;
+  const _LowStockRow({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct =
+        product.minStockAlert > 0 ? product.stockQuantity / product.minStockAlert : 0.0;
+    final barColor = product.stockQuantity == 0
+        ? AppColors.danger
+        : const Color(0xFFD97706);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: Row(
+        children: [
+          // Icon
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: barColor.withAlpha(20),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.inventory_2_outlined, color: barColor, size: 18),
+          ),
+          const SizedBox(width: 12),
+          // Name + bar
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: Color(0xFF0F172A)),
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct.clamp(0.0, 1.0),
+                    minHeight: 5,
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    valueColor: AlwaysStoppedAnimation(barColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Qty badge
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${product.stockQuantity}',
+                style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: barColor),
+              ),
+              Text(
+                '${'low_stock_min'.tr()} ${product.minStockAlert}',
+                style: const TextStyle(
+                    fontSize: 10, color: AppColors.sidebarTextMuted),
+              ),
+            ],
+          ),
         ],
       ),
     );
