@@ -230,5 +230,10 @@
 
     "update_available_title": "يوجد تحديث جديد للتطبيق",
     "update_available_subtitle": "الإصدار الجديد:",
-    "update_install_now": "تحديث الآن"
+    "update_install_now": "تحديث الآن",
+    "update_downloading": "جاري تنزيل التحديث...",
+    "update_connecting": "جاري الاتصال...",
+    "update_error": "فشل تنزيل التحديث",
+    "update_error_subtitle": "تحقق من الاتصال بالإنترنت وحاول مرة أخرى",
+    "update_retry": "إعادة المحاولة"
 }

@@ -230,5 +230,10 @@
 
     "update_available_title": "A new update is available",
     "update_available_subtitle": "New version:",
-    "update_install_now": "Update Now"
+    "update_install_now": "Update Now",
+    "update_downloading": "Downloading update...",
+    "update_connecting": "Connecting...",
+    "update_error": "Download failed",
+    "update_error_subtitle": "Check your internet connection and try again",
+    "update_retry": "Retry"
 }

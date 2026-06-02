@@ -79,7 +79,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (updateProvider.updateAvailable)
             _UpdateBanner(
               version: updateProvider.latestVersion,
+              isDownloading: updateProvider.isDownloading,
+              downloadProgress: updateProvider.downloadProgress,
+              downloadError: updateProvider.downloadError,
               onInstall: updateProvider.installUpdate,
+              onRetry: updateProvider.resetError,
             ),
           if (updateProvider.updateAvailable) const SizedBox(height: 16),
           _DashboardHeader(onRefresh: _load, onNewSale: widget.onNewSale),
@@ -527,7 +531,7 @@ class _SalesStatusChart extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _Legend(
-            color: AppColors.warning,
+            color: const Color.fromARGB(255, 245, 19, 11),
             label: 'status_partial'.tr(),
             value: fmt.format(pending),
           ),
@@ -631,16 +635,30 @@ class _ChartCard extends StatelessWidget {
 
 class _UpdateBanner extends StatelessWidget {
   final String version;
+  final bool isDownloading;
+  final double downloadProgress;
+  final bool downloadError;
   final VoidCallback onInstall;
-  const _UpdateBanner({required this.version, required this.onInstall});
+  final VoidCallback onRetry;
+
+  const _UpdateBanner({
+    required this.version,
+    required this.isDownloading,
+    required this.downloadProgress,
+    required this.downloadError,
+    required this.onInstall,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
+        gradient: LinearGradient(
+          colors: downloadError
+              ? [const Color(0xFFDC2626), const Color(0xFFEF4444)]
+              : [const Color(0xFF1D4ED8), const Color(0xFF2563EB)],
         ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
@@ -651,46 +669,90 @@ class _UpdateBanner extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.system_update_alt_rounded,
-              color: Colors.white, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'update_available_title'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+          Row(
+            children: [
+              Icon(
+                downloadError
+                    ? Icons.error_outline_rounded
+                    : Icons.system_update_alt_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      downloadError
+                          ? 'update_error'.tr()
+                          : isDownloading
+                              ? 'update_downloading'.tr()
+                              : 'update_available_title'.tr(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      downloadError
+                          ? 'update_error_subtitle'.tr()
+                          : '${'update_available_subtitle'.tr()} $version',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(200),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!isDownloading)
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: downloadError
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFF1D4ED8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: downloadError ? onRetry : onInstall,
+                  child: Text(
+                    downloadError
+                        ? 'update_retry'.tr()
+                        : 'update_install_now'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                Text(
-                  '${'update_available_subtitle'.tr()} $version',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(200),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF1D4ED8),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+          if (isDownloading) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: downloadProgress > 0 ? downloadProgress : null,
+                minHeight: 6,
+                backgroundColor: Colors.white.withAlpha(40),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
             ),
-            onPressed: onInstall,
-            child: Text('update_install_now'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
+            const SizedBox(height: 4),
+            Text(
+              downloadProgress > 0
+                  ? '${(downloadProgress * 100).toInt()}%'
+                  : 'update_connecting'.tr(),
+              style: TextStyle(
+                  color: Colors.white.withAlpha(200), fontSize: 11),
+            ),
+          ],
         ],
       ),
     );
