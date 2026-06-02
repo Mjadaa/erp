@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:auto_updater/auto_updater.dart';
 
 const _feedUrl =
     'https://raw.githubusercontent.com/Mjadaa/erp/main/appcast.xml';
-const _currentVersion = '1.0.0';
+const _currentVersion = '1.2.1';
 
 class UpdateProvider extends ChangeNotifier {
   bool _updateAvailable = false;
   String _latestVersion = '';
+  String _downloadUrl = '';
 
   bool get updateAvailable => _updateAvailable;
   String get latestVersion => _latestVersion;
@@ -22,12 +22,16 @@ class UpdateProvider extends ChangeNotifier {
       final body = await response.transform(utf8.decoder).join();
       client.close();
 
-      final match =
+      final versionMatch =
           RegExp(r'<sparkle:shortVersionString>(.*?)<\/').firstMatch(body);
-      if (match != null) {
-        final latest = match.group(1)!.trim();
+      final urlMatch =
+          RegExp(r'url="(https://github\.com/[^"]+\.zip)"').firstMatch(body);
+
+      if (versionMatch != null) {
+        final latest = versionMatch.group(1)!.trim();
         if (_isNewer(latest, _currentVersion)) {
           _latestVersion = latest;
+          _downloadUrl = urlMatch?.group(1) ?? '';
           _updateAvailable = true;
           notifyListeners();
         }
@@ -48,9 +52,9 @@ class UpdateProvider extends ChangeNotifier {
   }
 
   Future<void> installUpdate() async {
-    try {
-      await autoUpdater.setFeedURL(_feedUrl);
-      await autoUpdater.checkForUpdates();
-    } catch (_) {}
+    final url = _downloadUrl.isNotEmpty
+        ? _downloadUrl
+        : 'https://github.com/Mjadaa/erp/releases/latest';
+    await Process.run('cmd', ['/c', 'start', '', url]);
   }
 }
