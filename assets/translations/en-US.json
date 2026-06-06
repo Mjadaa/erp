@@ -235,5 +235,6 @@
     "update_connecting": "Connecting...",
     "update_error": "Download failed",
     "update_error_subtitle": "Check your internet connection and try again",
-    "update_retry": "Retry"
+    "update_retry": "Retry",
+    "update_restarting": "Restarting application..."
 }

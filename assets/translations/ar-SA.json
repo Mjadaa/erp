@@ -235,5 +235,6 @@
     "update_connecting": "جاري الاتصال...",
     "update_error": "فشل تنزيل التحديث",
     "update_error_subtitle": "تحقق من الاتصال بالإنترنت وحاول مرة أخرى",
-    "update_retry": "إعادة المحاولة"
+    "update_retry": "إعادة المحاولة",
+    "update_restarting": "جاري إعادة تشغيل التطبيق..."
 }

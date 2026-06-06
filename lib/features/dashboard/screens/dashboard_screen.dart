@@ -82,8 +82,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               isDownloading: updateProvider.isDownloading,
               downloadProgress: updateProvider.downloadProgress,
               downloadError: updateProvider.downloadError,
-              onInstall: updateProvider.installUpdate,
-              onRetry: updateProvider.resetError,
+              readyToInstall: updateProvider.readyToInstall,
+              onRetry: updateProvider.retryUpdate,
             ),
           if (updateProvider.updateAvailable) const SizedBox(height: 16),
           _DashboardHeader(onRefresh: _load, onNewSale: widget.onNewSale),
@@ -638,7 +638,7 @@ class _UpdateBanner extends StatelessWidget {
   final bool isDownloading;
   final double downloadProgress;
   final bool downloadError;
-  final VoidCallback onInstall;
+  final bool readyToInstall;
   final VoidCallback onRetry;
 
   const _UpdateBanner({
@@ -646,7 +646,7 @@ class _UpdateBanner extends StatelessWidget {
     required this.isDownloading,
     required this.downloadProgress,
     required this.downloadError,
-    required this.onInstall,
+    required this.readyToInstall,
     required this.onRetry,
   });
 
@@ -658,7 +658,9 @@ class _UpdateBanner extends StatelessWidget {
         gradient: LinearGradient(
           colors: downloadError
               ? [const Color(0xFFDC2626), const Color(0xFFEF4444)]
-              : [const Color(0xFF1D4ED8), const Color(0xFF2563EB)],
+              : readyToInstall
+                  ? [const Color(0xFF059669), const Color(0xFF10B981)]
+                  : [const Color(0xFF1D4ED8), const Color(0xFF2563EB)],
         ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
@@ -674,13 +676,23 @@ class _UpdateBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                downloadError
-                    ? Icons.error_outline_rounded
-                    : Icons.system_update_alt_rounded,
-                color: Colors.white,
-                size: 22,
-              ),
+              if (readyToInstall)
+                const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
+              else
+                Icon(
+                  downloadError
+                      ? Icons.error_outline_rounded
+                      : Icons.system_update_alt_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -689,9 +701,11 @@ class _UpdateBanner extends StatelessWidget {
                     Text(
                       downloadError
                           ? 'update_error'.tr()
-                          : isDownloading
-                              ? 'update_downloading'.tr()
-                              : 'update_available_title'.tr(),
+                          : readyToInstall
+                              ? 'update_restarting'.tr()
+                              : isDownloading
+                                  ? 'update_downloading'.tr()
+                                  : 'update_available_title'.tr(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -710,23 +724,19 @@ class _UpdateBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!isDownloading)
+              if (downloadError)
                 FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: downloadError
-                        ? const Color(0xFFDC2626)
-                        : const Color(0xFF1D4ED8),
+                    foregroundColor: const Color(0xFFDC2626),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 18, vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
                   ),
-                  onPressed: downloadError ? onRetry : onInstall,
+                  onPressed: onRetry,
                   child: Text(
-                    downloadError
-                        ? 'update_retry'.tr()
-                        : 'update_install_now'.tr(),
+                    'update_retry'.tr(),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),

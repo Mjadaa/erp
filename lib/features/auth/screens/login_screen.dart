@@ -136,12 +136,13 @@ class _BrandingPanel extends StatelessWidget {
 
                 // App title
                 Text(
-                  'app_title'.tr(),
+                  'أحلى سمعة',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+                    fontSize: 42,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                    letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -338,8 +339,18 @@ class _FormPanel extends StatelessWidget {
                       TextFormField(
                         controller: passwordController,
                         obscureText: obscurePassword,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'password_hint'.tr(),
+                          hintStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0,
+                          ),
                           prefixIcon: const Icon(Icons.lock_outline_rounded),
                           suffixIcon: IconButton(
                             icon: Icon(
