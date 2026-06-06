@@ -354,9 +354,11 @@ class _RevenueChart extends StatelessWidget {
   final List<Map<String, dynamic>> weeklySales;
   const _RevenueChart({required this.weeklySales});
 
+  static const _lineColor = Color(0xFF6366F1);
+  static const _lineColor2 = Color(0xFF8B5CF6);
+
   @override
   Widget build(BuildContext context) {
-    // Build spots from real data; fill missing days with 0
     final now = DateTime.now();
     final spots = <FlSpot>[];
     double maxY = 1;
@@ -373,25 +375,32 @@ class _RevenueChart extends StatelessWidget {
       if (total > maxY) maxY = total;
     }
 
-    // Day labels (abbreviated)
-    final days = List.generate(7, (i) {
+    final dayNames = List.generate(7, (i) {
       final day = now.subtract(Duration(days: 6 - i));
-      return DateFormat('E', context.locale.toString()).format(day);
+      return DateFormat('EEE', context.locale.toString()).format(day);
     });
+    final dayNums = List.generate(7, (i) {
+      final day = now.subtract(Duration(days: 6 - i));
+      return DateFormat('d').format(day);
+    });
+
+    final gridInterval = (maxY / 4).clamp(1.0, double.infinity);
 
     return _ChartCard(
       title: 'chart_revenue_title'.tr(),
       subtitle: 'chart_revenue_subtitle'.tr(),
       child: SizedBox(
-        height: 200,
+        height: 220,
         child: LineChart(
           LineChartData(
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
-              getDrawingHorizontalLine: (_) => const FlLine(
-                color: AppColors.cardBorder,
+              horizontalInterval: gridInterval,
+              getDrawingHorizontalLine: (_) => FlLine(
+                color: const Color(0xFFE2E8F0),
                 strokeWidth: 1,
+                dashArray: [4, 4],
               ),
             ),
             titlesData: FlTitlesData(
@@ -402,11 +411,14 @@ class _RevenueChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 48,
-                  getTitlesWidget: (value, _) => Text(
-                    NumberFormat.compact().format(value),
-                    style: const TextStyle(
-                      color: AppColors.sidebarTextMuted,
-                      fontSize: 10,
+                  getTitlesWidget: (value, _) => Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Text(
+                      NumberFormat.compact().format(value),
+                      style: const TextStyle(
+                        color: AppColors.sidebarTextMuted,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                 ),
@@ -417,17 +429,34 @@ class _RevenueChart extends StatelessWidget {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
+                  reservedSize: 40,
+                  interval: 1,
                   getTitlesWidget: (value, _) {
                     final i = value.toInt();
-                    if (i < 0 || i >= days.length) return const SizedBox();
+                    if (i < 0 || i >= 7 || value != i.toDouble()) {
+                      return const SizedBox();
+                    }
                     return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        days[i],
-                        style: const TextStyle(
-                          color: AppColors.sidebarTextMuted,
-                          fontSize: 11,
-                        ),
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            dayNames[i],
+                            style: const TextStyle(
+                              color: AppColors.sidebarTextMuted,
+                              fontSize: 9,
+                            ),
+                          ),
+                          Text(
+                            dayNums[i],
+                            style: const TextStyle(
+                              color: Color(0xFF475569),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -435,22 +464,46 @@ class _RevenueChart extends StatelessWidget {
               ),
             ),
             borderData: FlBorderData(show: false),
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipItems: (spots) => spots
+                    .map((s) => LineTooltipItem(
+                          NumberFormat('#,##0.##').format(s.y),
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
             lineBarsData: [
               LineChartBarData(
                 spots: spots,
                 isCurved: true,
-                curveSmoothness: 0.3,
-                color: AppColors.primary,
+                curveSmoothness: 0.35,
+                gradient: const LinearGradient(
+                  colors: [_lineColor, _lineColor2],
+                ),
                 barWidth: 3,
-                dotData: const FlDotData(show: false),
+                dotData: FlDotData(
+                  show: true,
+                  getDotPainter: (spot, p, b, i) => FlDotCirclePainter(
+                    radius: spot.y > 0 ? 4 : 0,
+                    color: Colors.white,
+                    strokeWidth: 2.5,
+                    strokeColor: _lineColor,
+                  ),
+                ),
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.primary.withAlpha(40),
-                      AppColors.primary.withAlpha(0),
+                      _lineColor.withAlpha(50),
+                      _lineColor.withAlpha(0),
                     ],
                   ),
                 ),
@@ -459,7 +512,7 @@ class _RevenueChart extends StatelessWidget {
             minX: 0,
             maxX: 6,
             minY: 0,
-            maxY: maxY * 1.2,
+            maxY: maxY * 1.25,
           ),
         ),
       ),
